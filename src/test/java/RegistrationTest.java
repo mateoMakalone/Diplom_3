@@ -17,19 +17,29 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 @RunWith(Parameterized.class)
 public class RegistrationTest {
-    private Faker faker = new Faker();
-    private WebDriver driver;
-    private final String name = faker.rickAndMorty().character();;
+    private final String password = RandomStringUtils.randomAlphabetic(6, 12);
+    private final String incorrectPassword = RandomStringUtils.randomAlphabetic(1, 5);
+    private final Faker faker = new Faker();
+    private final String name = faker.rickAndMorty().character();
     private final String email = faker.name().firstName() + "@ya.ya";
-    private final String password = RandomStringUtils.randomAlphabetic(6,12);
-    private final String incorrectPassword = RandomStringUtils.randomAlphabetic(1,5);
-    private Browser browser;
-    public RegistrationTest(Browser browser){
+    private WebDriver driver;
+    private final Browser browser;
+
+    public RegistrationTest(Browser browser) {
         this.browser = browser;
     }
+
+    @Parameterized.Parameters(name = "{index} : Browser = {0}")
+    public static Object[][] getBrowser() {
+        return new Object[][]{
+                {Browser.Chrome},
+                {Browser.Yandex}
+        };
+    }
+
     @Before
-    public void setUp(){
-        switch (browser){
+    public void setUp() {
+        switch (browser) {
             case Chrome:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
@@ -37,7 +47,7 @@ public class RegistrationTest {
                 driver = new ChromeDriver(options);
                 break;
             case Yandex:
-                System.setProperty("webdriver.chrome.driver","src/test/resources/chromedriver");
+                System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver");
                 options = new ChromeOptions();
                 options.setBinary("/Applications/Yandex.app/Contents/MacOS/Yandex");
                 driver = new ChromeDriver(options);
@@ -45,16 +55,10 @@ public class RegistrationTest {
         }
         driver.get("https://stellarburgers.nomoreparties.site/");
     }
-    @Parameterized.Parameters
-    public static Object[][] getBrowser(){
-        return new Object[][] {
-                {Browser.Chrome},
-                {Browser.Yandex}
-        };
-    }
+
     @Test
     @DisplayName("Регистрация пользователя")
-    public void registrationWithCorrectData(){
+    public void registrationWithCorrectData() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -66,9 +70,10 @@ public class RegistrationTest {
         registerPage.clickRegistrationButton();
         Assert.assertTrue(loginPage.isHeaderDisplayed());
     }
+
     @Test
     @DisplayName("Регистрация пользователя с некорректной длинной пароля")
-    public void registrationWithIncorrectPassword(){
+    public void registrationWithIncorrectPassword() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -80,8 +85,9 @@ public class RegistrationTest {
         registerPage.clickRegistrationButton();
         Assert.assertTrue(registerPage.isPasswordFieldhighlighted());
     }
+
     @After
-    public void tearDown(){
+    public void tearDown() {
         driver.quit();
     }
 }

@@ -1,5 +1,6 @@
 package api;
 
+import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 
 import static io.restassured.RestAssured.given;
@@ -7,7 +8,9 @@ import static io.restassured.RestAssured.given;
 public class UserClient extends RestClient {
     private static final String USER_CREATE = "api/auth/register";
     private static final String USER_DELETE = "api/auth/user";
-    public ValidatableResponse create(User user){
+
+    @Step("Создание пользователя")
+    public ValidatableResponse create(User user) {
         return given()
                 .spec(getBaseSpec())
                 .body(user)
@@ -15,7 +18,9 @@ public class UserClient extends RestClient {
                 .post(USER_CREATE)
                 .then();
     }
-    public ValidatableResponse delete(String accessToken){
+
+    @Step("Удаление пользователя")
+    public ValidatableResponse delete(String accessToken) {
         return given()
                 .spec(getBaseSpec())
                 .header("Authorization", "Bearer" + accessToken)

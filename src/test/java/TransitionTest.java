@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+
 @RunWith(Parameterized.class)
 public class TransitionTest {
     private WebDriver driver;
@@ -25,14 +26,23 @@ public class TransitionTest {
     private String email;
     private String password;
     private String accessToken;
-    private Browser browser;
-    public TransitionTest(Browser browser){
+    private final Browser browser;
+
+    public TransitionTest(Browser browser) {
         this.browser = browser;
     }
 
+    @Parameterized.Parameters(name = "{index} : Browser = {0}")
+    public static Object[][] getBrowser() {
+        return new Object[][]{
+                {Browser.Chrome},
+                {Browser.Yandex}
+        };
+    }
+
     @Before
-    public void setUp(){
-        switch (browser){
+    public void setUp() {
+        switch (browser) {
             case Chrome:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
@@ -40,7 +50,7 @@ public class TransitionTest {
                 driver = new ChromeDriver(options);
                 break;
             case Yandex:
-                System.setProperty("webdriver.chrome.driver","src/test/resources/chromedriver");
+                System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver");
                 options = new ChromeOptions();
                 options.setBinary("/Applications/Yandex.app/Contents/MacOS/Yandex");
                 driver = new ChromeDriver(options);
@@ -54,48 +64,45 @@ public class TransitionTest {
         ValidatableResponse userCreate = userClient.create(user);
         accessToken = userCreate.extract().path("accessToken");
     }
-    @Parameterized.Parameters
-    public static Object[][] getBrowser(){
-        return new Object[][] {
-                {Browser.Chrome},
-                {Browser.Yandex}
-        };
-    }
+
     @Test
     @DisplayName("Переход на страницу личного кабинета")
-    public void personalCabTransitionWithAuth(){
+    public void personalCabTransitionWithAuth() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.fillLoginForm(email,password);
+        loginPage.fillLoginForm(email, password);
         header.clickPesonalCabButton();
         PersonalCabPage personalCabPage = new PersonalCabPage(driver);
         Assert.assertTrue(personalCabPage.isProfileDisplayed());
     }
+
     @Test
     @DisplayName("Переход из личного кабинета на страницу конструктора")
-    public void constructorTransitionFromPersonalCab(){
+    public void constructorTransitionFromPersonalCab() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.fillLoginForm(email,password);
+        loginPage.fillLoginForm(email, password);
         header.clickConstructorButton();
         MainPage mainPage = new MainPage(driver);
         Assert.assertEquals(mainPage.constructorButtonActive(), mainPage.constructorMenuDisplayed());
     }
+
     @Test
     @DisplayName("Переход из личного кабинета на главную страницу по клику на лого")
-    public void transitionFromPersonalCabToMainPage(){
+    public void transitionFromPersonalCabToMainPage() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.fillLoginForm(email,password);
+        loginPage.fillLoginForm(email, password);
         header.clickLogo();
         MainPage mainPage = new MainPage(driver);
         Assert.assertTrue(mainPage.mainPageDisplayed());
     }
+
     @After
-    public void tearDown(){
+    public void tearDown() {
         driver.quit();
         userClient.delete(accessToken);
     }

@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+
 @RunWith(Parameterized.class)
 public class LoginLogoutTest {
     private WebDriver driver;
@@ -22,13 +23,23 @@ public class LoginLogoutTest {
     private String accessToken;
     private String email;
     private String password;
-    private Browser browser;
-    public LoginLogoutTest(Browser browser){
+    private final Browser browser;
+
+    public LoginLogoutTest(Browser browser) {
         this.browser = browser;
     }
+
+    @Parameterized.Parameters(name = "{index} : Browser = {0}")
+    public static Object[][] getData() {
+        return new Object[][]{
+                {Browser.Chrome},
+                {Browser.Yandex}
+        };
+    }
+
     @Before
-    public void setUp(){
-        switch (browser){
+    public void setUp() {
+        switch (browser) {
             case Chrome:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
@@ -36,7 +47,7 @@ public class LoginLogoutTest {
                 driver = new ChromeDriver(options);
                 break;
             case Yandex:
-                System.setProperty("webdriver.chrome.driver","src/test/resources/chromedriver");
+                System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver");
                 options = new ChromeOptions();
                 options.setBinary("/Applications/Yandex.app/Contents/MacOS/Yandex");
                 driver = new ChromeDriver(options);
@@ -50,16 +61,10 @@ public class LoginLogoutTest {
         ValidatableResponse userCreate = userClient.create(user);
         accessToken = userCreate.extract().path("accessToken");
     }
-    @Parameterized.Parameters
-    public static Object[][] getData(){
-        return new Object[][]{
-                {Browser.Chrome},
-                {Browser.Yandex}
-        };
-    }
+
     @Test
     @DisplayName("Вход по кнопке «Войти в аккаунт» на главной странице")
-    public void loginThroughMainPageButton(){
+    public void loginThroughMainPageButton() {
         MainPage mainPage = new MainPage(driver);
         mainPage.clickLoginButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -69,9 +74,10 @@ public class LoginLogoutTest {
         PersonalCabPage personalCabPage = new PersonalCabPage(driver);
         Assert.assertTrue(personalCabPage.isProfileDisplayed());
     }
+
     @Test
     @DisplayName("Вход через кнопку «Личный кабинет»")
-    public void loginThroughPersonalCabButton(){
+    public void loginThroughPersonalCabButton() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -80,23 +86,25 @@ public class LoginLogoutTest {
         PersonalCabPage personalCabPage = new PersonalCabPage(driver);
         Assert.assertTrue(personalCabPage.isProfileDisplayed());
     }
+
     @Test
     @DisplayName("Вход через кнопку в форме регистрации")
-    public void loginThroughRegistrationFormButton(){
+    public void loginThroughRegistrationFormButton() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
         loginPage.clickRegistrationButton();
         RegisterPage registerPage = new RegisterPage(driver);
         registerPage.clickLoginButton();
-        loginPage.fillLoginForm(email,password);
+        loginPage.fillLoginForm(email, password);
         header.clickPesonalCabButton();
         PersonalCabPage personalCabPage = new PersonalCabPage(driver);
         Assert.assertTrue(personalCabPage.isProfileDisplayed());
     }
+
     @Test
     @DisplayName("Вход через кнопку в форме восстановления пароля")
-    public void loginThroughRecoveryPasswordForm(){
+    public void loginThroughRecoveryPasswordForm() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -108,9 +116,10 @@ public class LoginLogoutTest {
         PersonalCabPage personalCabPage = new PersonalCabPage(driver);
         Assert.assertTrue(personalCabPage.isProfileDisplayed());
     }
+
     @Test
     @DisplayName("Выход из аккаунта по кнопке в личном кабинете")
-    public void logoutFromPesonalCab(){
+    public void logoutFromPesonalCab() {
         Header header = new Header(driver);
         header.clickPesonalCabButton();
         LoginPage loginPage = new LoginPage(driver);
@@ -120,8 +129,9 @@ public class LoginLogoutTest {
         personalCabPage.clickLogoutButton();
         Assert.assertTrue(loginPage.isHeaderDisplayed());
     }
+
     @After
-    public void cleanUp(){
+    public void cleanUp() {
         driver.quit();
         userClient.delete(accessToken);
     }
